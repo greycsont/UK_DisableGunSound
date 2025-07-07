@@ -1,7 +1,7 @@
 using UnityEngine;
 using HarmonyLib;
 
-namespace StyleGo;
+namespace DisableGunSound;
 
 [HarmonyPatch(typeof(Railcannon), nameof(Railcannon.Shoot))]
 public static class RailcannonShootPatch

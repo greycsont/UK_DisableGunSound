@@ -2,6 +2,8 @@ using UnityEngine;
 using HarmonyLib;
 using System.Collections;
 
+namespace DisableGunSound;
+
 
 [HarmonyPatch(typeof(ShotgunHammer), nameof(ShotgunHammer.Impact))]
 public static class ShotgunHammerImpactPatch

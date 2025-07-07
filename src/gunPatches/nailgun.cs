@@ -1,7 +1,7 @@
 using UnityEngine;
 using HarmonyLib;
 
-namespace StyleGo;
+namespace DisableGunSound;
 
 [HarmonyPatch(typeof(Nailgun), nameof(Nailgun.Shoot))]
 public static class NailgunPatch

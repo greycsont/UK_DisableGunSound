@@ -1,7 +1,7 @@
 using UnityEngine;
 using HarmonyLib;
 
-namespace StyleGo;
+namespace DisableGunSound;
 
 [HarmonyPatch(typeof(Revolver), nameof(Revolver.Shoot))]
 public static class RevolverPatch

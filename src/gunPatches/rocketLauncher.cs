@@ -1,6 +1,8 @@
 using UnityEngine;
 using HarmonyLib;
 
+namespace DisableGunSound;
+
 [HarmonyPatch(typeof(RocketLauncher), nameof(RocketLauncher.Shoot))]
 public static class RocketLauncherShootPatch
 {

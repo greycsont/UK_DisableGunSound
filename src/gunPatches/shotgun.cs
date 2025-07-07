@@ -1,7 +1,7 @@
 using HarmonyLib;
 using UnityEngine;
 
-namespace StyleGo;
+namespace DisableGunSound;
 
 
 [HarmonyPatch(typeof(Shotgun), nameof(Shotgun.ShootSaw))]

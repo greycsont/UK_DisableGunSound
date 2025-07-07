@@ -1,4 +1,4 @@
-namespace StyleGo
+namespace DisableGunSound
 {
     internal static class PluginInfo
     {
