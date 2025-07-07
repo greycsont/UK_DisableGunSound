@@ -104,7 +104,6 @@ public static class ShotgunShootPatch
     {
         var volume = InstanceConfig.Volume;
 
-        Plugin.Log.LogInfo("ShotgunPatch.Start called");
         __instance.gunReady = false;
         int num = 12;
         if (__instance.variation == 1)
@@ -222,7 +221,7 @@ public static class ShotgunShootPatch
         __instance.gunAud.clip = __instance.shootSound;
 
         __instance.gunAud.volume = volume;
-        
+
         __instance.gunAud.panStereo = 0f;
         __instance.gunAud.Play();
         __instance.cc.CameraShake(1f);

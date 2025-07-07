@@ -154,7 +154,6 @@ public static class ShotgunHammerImpactPatch
     {
         var volume = InstanceConfig.Volume;
 
-
         __instance.hitEnemy = null;
         __instance.hitGrenade = null;
         __instance.target = null;

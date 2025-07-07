@@ -21,12 +21,13 @@ public class Plugin : BaseUnityPlugin
         LoadOptionalModule();
 
         PatchHarmony(); 
-        Log.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
+        LogManager.log = new BepInExLogAdapter(Log);
+        LogManager.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
     }
 
     private void LoadMainModule()
     {
-        
+        pluginConfiguratorEntry.Build();
     }
     private void LoadOptionalModule()
     {
