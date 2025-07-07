@@ -8,6 +8,8 @@ public static class NailgunPatch
 {
     public static bool Prefix(Nailgun __instance)
     {
+        var volume = InstanceConfig.Volume;
+
         __instance.UpdateAnimationWeight();
         __instance.fireCooldown = __instance.currentFireRate;
         __instance.shotSuccesfully = true;
@@ -41,7 +43,7 @@ public static class NailgunPatch
         {
             AudioSource component = gameObject.GetComponent<AudioSource>();
             component.Stop();
-            component.volume = 0f;
+            component.volume = volume;
             component.Play();
 
             if (__instance.burnOut)

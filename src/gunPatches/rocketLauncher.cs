@@ -8,6 +8,15 @@ public static class RocketLauncherShootPatch
 {
     public static bool Prefix(RocketLauncher __instance)
     {
+        var volume = InstanceConfig.Volume;
+        
+        if (__instance.aud)
+        {
+            __instance.aud.volume = volume;
+
+            __instance.aud.pitch = Random.Range(0.9f, 1.1f);
+            __instance.aud.Play();
+        }
         if (__instance.variation == 1 && __instance.cbCharge > 0f)
         {
             __instance.chargeSound.Stop();

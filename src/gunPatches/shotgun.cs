@@ -9,6 +9,8 @@ public static class ShotgunShootSawPatch
 {
     public static bool Prefix(Shotgun __instance)
     {
+        var volume = InstanceConfig.Volume;
+
         __instance.gunReady = true;
         __instance.transform.localPosition = __instance.wpos.currentDefault;
         Vector3 vector = __instance.cam.transform.forward;
@@ -40,7 +42,7 @@ public static class ShotgunShootSawPatch
         __instance.anim.Play("FireNoReload");
         __instance.gunAud.clip = __instance.shootSound;
 
-        __instance.gunAud.volume = 0f;
+        __instance.gunAud.volume = volume;
 
         __instance.gunAud.panStereo = 0f;
         __instance.gunAud.pitch = Random.Range(0.75f, 0.85f);
@@ -59,6 +61,8 @@ public static class ShotgunShootSinksPatch
 {
     public static bool Prefix(Shotgun __instance)
     {
+        var volume = InstanceConfig.Volume;
+
         __instance.gunReady = false;
         __instance.transform.localPosition = __instance.wpos.currentDefault;
         foreach (Transform transform in __instance.shootPoints)
@@ -71,7 +75,7 @@ public static class ShotgunShootSinksPatch
         __instance.anim.SetTrigger("Secondary Fire");
         __instance.gunAud.clip = __instance.shootSound;
 
-        __instance.gunAud.volume = 0f;
+        __instance.gunAud.volume = volume;
 
         __instance.gunAud.panStereo = 0f;
         __instance.gunAud.pitch = Random.Range(0.75f, 0.85f);
@@ -98,6 +102,8 @@ public static class ShotgunShootPatch
 {
     public static bool Prefix(Shotgun __instance)
     {
+        var volume = InstanceConfig.Volume;
+
         Plugin.Log.LogInfo("ShotgunPatch.Start called");
         __instance.gunReady = false;
         int num = 12;
@@ -214,7 +220,9 @@ public static class ShotgunShootPatch
             __instance.gunAud.pitch = Random.Range(0.95f, 1.05f);
         }
         __instance.gunAud.clip = __instance.shootSound;
-        __instance.gunAud.volume = 0f;
+
+        __instance.gunAud.volume = volume;
+        
         __instance.gunAud.panStereo = 0f;
         __instance.gunAud.Play();
         __instance.cc.CameraShake(1f);

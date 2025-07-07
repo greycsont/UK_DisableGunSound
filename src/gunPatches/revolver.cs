@@ -9,6 +9,8 @@ public static class RevolverPatch
     // This includes both variants
     public static bool Prefix(ref int shotType, Revolver __instance)
     {
+        var volume = InstanceConfig.Volume;
+
         __instance.cc.StopShake();
         __instance.shootReady = false;
         __instance.shootCharge = 0f;
@@ -33,7 +35,9 @@ public static class RevolverPatch
             }
             __instance.currentGunShot = Random.Range(0, __instance.gunShots.Length);
             __instance.gunAud.clip = __instance.gunShots[__instance.currentGunShot];
-            __instance.gunAud.volume = 0f;
+
+            __instance.gunAud.volume = volume;
+
             __instance.gunAud.pitch = Random.Range(0.9f, 1.1f);
             __instance.gunAud.Play();
             __instance.cam.fieldOfView = __instance.cam.fieldOfView + __instance.cc.defaultFov / 40f;
@@ -73,7 +77,9 @@ public static class RevolverPatch
                 {
                     __instance.screenAud.pitch = 1f;
                 }
-                __instance.screenAud.volume = 0f;
+
+                __instance.screenAud.volume = volume;
+
                 __instance.screenAud.Play();
             }
             else if (!__instance.wid || __instance.wid.delay == 0f)
@@ -82,11 +88,18 @@ public static class RevolverPatch
             }
             if (__instance.superGunSound)
             {
-                //Object.Instantiate<AudioSource>(__instance.superGunSound);
+                AudioSource aud = Object.Instantiate<AudioSource>(__instance.superGunSound);
+                aud.Stop();
+                aud.volume = volume;
+                aud.Play();
             }
             if (__instance.gunVariation == 2 && __instance.twirlShotSound)
             {
-                //Object.Instantiate<GameObject>(__instance.twirlShotSound, __instance.transform.position, Quaternion.identity);
+                GameObject redvarObject = Object.Instantiate<GameObject>(__instance.twirlShotSound, __instance.transform.position, Quaternion.identity);
+                AudioSource aud = redvarObject.GetComponent<AudioSource>();
+                aud.Stop();
+                aud.volume = volume;
+                aud.Play();
             }
             __instance.cam.fieldOfView = __instance.cam.fieldOfView + __instance.cc.defaultFov / 20f;
             MonoSingleton<RumbleManager>.Instance.SetVibrationTracked(RumbleProperties.GunFireStrong, __instance.gameObject);

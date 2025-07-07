@@ -8,6 +8,8 @@ public static class RailcannonShootPatch
 {
     public static bool Prefix(Railcannon __instance)
     {
+        var volume = InstanceConfig.Volume;
+
         GameObject gameObject = Object.Instantiate<GameObject>(__instance.beam, __instance.cc.GetDefaultPos(), __instance.cc.transform.rotation);
 		if (__instance.targeter.CurrentTarget && __instance.targeter.IsAutoAimed)
 		{
@@ -31,7 +33,12 @@ public static class RailcannonShootPatch
 				harpoon.sourceWeapon = __instance.gameObject;
 			}
 		}
-		//Object.Instantiate<GameObject>(__instance.fireSound);
+		var fireSound = Object.Instantiate<GameObject>(__instance.fireSound);
+        var aud = fireSound.GetComponent<AudioSource>();
+        aud.Stop();
+        aud.volume = volume;
+        aud.Play();
+
 		__instance.anim.SetTrigger("Shoot");
 		__instance.cc.CameraShake(2f);
 		MonoSingleton<RumbleManager>.Instance.SetVibration(RumbleProperties.GunFireStrong);

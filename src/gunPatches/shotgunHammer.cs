@@ -5,6 +5,143 @@ using System.Collections;
 namespace DisableGunSound;
 
 
+[HarmonyPatch(typeof(ShotgunHammer), nameof(ShotgunHammer.ShootSaw))]
+public static class ShotgunHammerShootSawPatch
+{
+    public static bool Prefix(ShotgunHammer __instance)
+    {
+        var volume = InstanceConfig.Volume;
+
+        __instance.gunReady = true;
+        __instance.transform.localPosition = __instance.wpos.currentDefault;
+        Vector3 a = MonoSingleton<CameraController>.Instance.transform.forward;
+        if (__instance.targeter.CurrentTarget && __instance.targeter.IsAutoAimed)
+        {
+            a = (__instance.targeter.CurrentTarget.bounds.center - MonoSingleton<CameraController>.Instance.GetDefaultPos()).normalized;
+        }
+        Vector3 position = MonoSingleton<CameraController>.Instance.GetDefaultPos() + a * 0.5f;
+        RaycastHit raycastHit;
+        if (Physics.Raycast(MonoSingleton<CameraController>.Instance.GetDefaultPos(), a, out raycastHit, 5f, LayerMaskDefaults.Get(LMD.EnvironmentAndBigEnemies)))
+        {
+            position = raycastHit.point - a * 5f;
+        }
+        Chainsaw chainsaw = Object.Instantiate<Chainsaw>(__instance.chainsaw, position, Random.rotation);
+        chainsaw.weaponType = "hammer" + __instance.variation.ToString();
+        chainsaw.CheckMultipleRicochets(true);
+        chainsaw.sourceWeapon = __instance.gc.currentWeapon;
+        chainsaw.attachedTransform = MonoSingleton<PlayerTracker>.Instance.GetTarget();
+        chainsaw.lineStartTransform = __instance.chainsawAttachPoint;
+        chainsaw.GetComponent<Rigidbody>().AddForce(a * (__instance.chargeForce + 10f) * 1.5f, ForceMode.VelocityChange);
+        __instance.currentChainsaws.Add(chainsaw);
+        __instance.chainsawBladeRenderer.material = __instance.chainsawBladeMaterial;
+        __instance.chainsawBladeScroll.scrollSpeedX = 0f;
+        __instance.chainsawAttachPoint.gameObject.SetActive(false);
+
+        AudioSource aud = Object.Instantiate<AudioSource>(__instance.nadeSpawnSound);
+        aud.Stop();
+        aud.volume = volume;
+        aud.Play();
+
+        __instance.anim.Play("SawingShot");
+        MonoSingleton<CameraController>.Instance.CameraShake(1f);
+        __instance.chargeForce = 0f;
+
+        return false;
+    }
+}
+
+
+[HarmonyPatch(typeof(ShotgunHammer), nameof(ShotgunHammer.ThrowNade))]
+public static class ShotgunHammerThrowNadePatch
+{
+    public static bool Prefix(ShotgunHammer __instance)
+    {
+        var volume = InstanceConfig.Volume;
+
+        MonoSingleton<WeaponCharges>.Instance.shoAltNadeCharge = 0f;
+        __instance.pulledOut = 0.3f;
+        __instance.gunReady = false;
+        __instance.aboutToSecondary = false;
+        Vector3 a = MonoSingleton<CameraController>.Instance.transform.forward;
+        if (__instance.targeter.CurrentTarget && __instance.targeter.IsAutoAimed)
+        {
+            a = (__instance.targeter.CurrentTarget.bounds.center - MonoSingleton<CameraController>.Instance.GetDefaultPos()).normalized;
+        }
+        GameObject gameObject = Object.Instantiate<GameObject>(__instance.grenade, MonoSingleton<CameraController>.Instance.GetDefaultPos() + a * 2f - MonoSingleton<CameraController>.Instance.transform.up * 0.5f, Random.rotation);
+        Rigidbody rigidbody;
+        if (gameObject.TryGetComponent<Rigidbody>(out rigidbody))
+        {
+            rigidbody.AddForce(MonoSingleton<CameraController>.Instance.transform.forward * 3f + Vector3.up * 7.5f + (MonoSingleton<NewMovement>.Instance.ridingRocket ? MonoSingleton<NewMovement>.Instance.ridingRocket.rb.velocity : MonoSingleton<NewMovement>.Instance.rb.velocity), ForceMode.VelocityChange);
+        }
+        Grenade grenade;
+        if (gameObject.TryGetComponent<Grenade>(out grenade))
+        {
+            grenade.sourceWeapon = __instance.gameObject;
+        }
+        __instance.anim.Play("NadeSpawn", -1, 0f);
+        
+        AudioSource aud = Object.Instantiate<AudioSource>(__instance.nadeSpawnSound);
+        aud.Stop();
+        aud.volume = volume;
+        aud.Play();
+
+        return false;
+    }
+}
+
+
+[HarmonyPatch(typeof(ShotgunHammer), nameof(ShotgunHammer.ImpactEffects))]
+public static class ShotgunHammerImpactEffectsPatch
+{
+    public static bool Prefix(ShotgunHammer __instance)
+    {
+        var volume = InstanceConfig.Volume;
+
+        Vector3 position = (__instance.hitPosition != Vector3.zero) ? (__instance.hitPosition - (__instance.hitPosition - MonoSingleton<CameraController>.Instance.GetDefaultPos()).normalized) : (MonoSingleton<CameraController>.Instance.GetDefaultPos() + __instance.direction * 2.5f);
+		if (__instance.primaryCharge > 0)
+		{
+			GameObject gameObject = Object.Instantiate<GameObject>((__instance.primaryCharge == 3) ? __instance.overPumpExplosion : __instance.pumpExplosion, position, Quaternion.LookRotation(__instance.direction));
+			foreach (Explosion explosion in gameObject.GetComponentsInChildren<Explosion>())
+			{
+				explosion.sourceWeapon = __instance.gameObject;
+				explosion.hitterWeapon = "hammer";
+				if (__instance.primaryCharge == 2)
+				{
+					explosion.maxSize *= 2f;
+				}
+			}
+			AudioSource audioSource;
+			if (__instance.primaryCharge == 2 && gameObject.TryGetComponent<AudioSource>(out audioSource))
+			{
+				audioSource.volume = 1f;
+				audioSource.pitch -= 0.4f;
+			}
+			__instance.primaryCharge = 0;
+		}
+		if (__instance.forceWeakHit || __instance.tier == 0)
+		{
+			__instance.anim.Play("Fire", -1, 0f);
+		}
+		else if (__instance.tier == 1)
+		{
+			__instance.anim.Play("FireStrong", -1, 0f);
+		}
+		else
+		{
+			__instance.anim.Play("FireStrongest", -1, 0f);
+		}
+
+		GameObject hitsound = Object.Instantiate<GameObject>(__instance.hitImpactParticle[__instance.forceWeakHit ? 0 : __instance.tier], position, MonoSingleton<CameraController>.Instance.transform.rotation);
+        AudioSource hitsoundAudioSource = hitsound.GetComponent<AudioSource>();
+        hitsoundAudioSource.Stop();
+        hitsoundAudioSource.volume = volume;
+        hitsoundAudioSource.Play();
+
+        return false;
+    }
+}
+
+
 [HarmonyPatch(typeof(ShotgunHammer), nameof(ShotgunHammer.Impact))]
 public static class ShotgunHammerImpactPatch
 {
@@ -15,6 +152,9 @@ public static class ShotgunHammerImpactPatch
     }
     public static IEnumerator ImpactRoutine(ShotgunHammer __instance)
     {
+        var volume = InstanceConfig.Volume;
+
+
         __instance.hitEnemy = null;
         __instance.hitGrenade = null;
         __instance.target = null;
@@ -51,7 +191,7 @@ public static class ShotgunHammerImpactPatch
                             //Edited
                             AudioSource aud = Object.Instantiate<AudioSource>(__instance.hitSound, __instance.transform.position, Quaternion.identity);
                             aud.Stop();
-                            aud.volume = 0f;
+                            aud.volume = volume;
                             aud.Play();
 
                             MonoSingleton<TimeController>.Instance.TrueStop(0.25f);
@@ -68,7 +208,7 @@ public static class ShotgunHammerImpactPatch
                             // edited
                             AudioSource aud = Object.Instantiate<AudioSource>(__instance.hitSound, __instance.transform.position, Quaternion.identity);
                             aud.Stop();
-                            aud.volume = 0f;
+                            aud.volume = volume;
                             aud.Play();
 
                             chainsaw.GetPunched();
@@ -82,7 +222,7 @@ public static class ShotgunHammerImpactPatch
                             
                             AudioSource aud = Object.Instantiate<AudioSource>(__instance.hitSound, __instance.transform.position, Quaternion.identity);
                             aud.Stop();
-                            aud.volume = 0f;
+                            aud.volume = volume;
                             aud.Play();
 
                             __instance.anim.Play("Fire", -1, 0f);
@@ -113,7 +253,7 @@ public static class ShotgunHammerImpactPatch
                 {
                     AudioSource aud = Object.Instantiate<AudioSource>(__instance.hitSound, __instance.transform.position, Quaternion.identity);
                     aud.Stop();
-                    aud.volume = 0f;
+                    aud.volume = volume;
                     aud.Play();
 
                     chainsaw2.GetPunched();
@@ -127,7 +267,7 @@ public static class ShotgunHammerImpactPatch
 
                     AudioSource aud = Object.Instantiate<AudioSource>(__instance.hitSound, __instance.transform.position, Quaternion.identity);
                     aud.Stop();
-                    aud.volume = 0f;
+                    aud.volume = volume;
                     aud.Play();
 
                     __instance.anim.Play("Fire", -1, 0f);
@@ -172,7 +312,7 @@ public static class ShotgunHammerImpactPatch
 
                         AudioSource aud = Object.Instantiate<AudioSource>(__instance.hitSound, __instance.transform.position, Quaternion.identity);
                         aud.Stop();
-                        aud.volume = 0f;
+                        aud.volume = volume;
                         aud.Play();
 
                         __instance.anim.Play("Fire", -1, 0f);
@@ -305,7 +445,7 @@ public static class ShotgunHammerImpactPatch
 
                     AudioSource aud = Object.Instantiate<AudioSource>(__instance.hitSound, __instance.transform.position, Quaternion.identity);
                     aud.Stop();
-                    aud.volume = 0f;
+                    aud.volume = volume;
                     aud.Play();
 
                     MonoSingleton<TimeController>.Instance.TrueStop(num6);
