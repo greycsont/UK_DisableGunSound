@@ -54,38 +54,14 @@ public static class ShotgunHammerShootSawPatch
 [HarmonyPatch(typeof(ShotgunHammer), nameof(ShotgunHammer.ThrowNade))]
 public static class ShotgunHammerThrowNadePatch
 {
-    public static bool Prefix(ShotgunHammer __instance)
+    public static void Prefix(ShotgunHammer __instance)
     {
         var volume = InstanceConfig.Volume;
 
-        MonoSingleton<WeaponCharges>.Instance.shoAltNadeCharge = 0f;
-        __instance.pulledOut = 0.3f;
-        __instance.gunReady = false;
-        __instance.aboutToSecondary = false;
-        Vector3 a = MonoSingleton<CameraController>.Instance.transform.forward;
-        if (__instance.targeter.CurrentTarget && __instance.targeter.IsAutoAimed)
+        if (__instance.nadeSpawnSound)
         {
-            a = (__instance.targeter.CurrentTarget.bounds.center - MonoSingleton<CameraController>.Instance.GetDefaultPos()).normalized;
+            __instance.nadeSpawnSound.volume = volume;
         }
-        GameObject gameObject = Object.Instantiate<GameObject>(__instance.grenade, MonoSingleton<CameraController>.Instance.GetDefaultPos() + a * 2f - MonoSingleton<CameraController>.Instance.transform.up * 0.5f, Random.rotation);
-        Rigidbody rigidbody;
-        if (gameObject.TryGetComponent<Rigidbody>(out rigidbody))
-        {
-            rigidbody.AddForce(MonoSingleton<CameraController>.Instance.transform.forward * 3f + Vector3.up * 7.5f + (MonoSingleton<NewMovement>.Instance.ridingRocket ? MonoSingleton<NewMovement>.Instance.ridingRocket.rb.velocity : MonoSingleton<NewMovement>.Instance.rb.velocity), ForceMode.VelocityChange);
-        }
-        Grenade grenade;
-        if (gameObject.TryGetComponent<Grenade>(out grenade))
-        {
-            grenade.sourceWeapon = __instance.gameObject;
-        }
-        __instance.anim.Play("NadeSpawn", -1, 0f);
-        
-        AudioSource aud = Object.Instantiate<AudioSource>(__instance.nadeSpawnSound);
-        aud.Stop();
-        aud.volume = volume;
-        aud.Play();
-
-        return false;
     }
 }
 
@@ -93,51 +69,16 @@ public static class ShotgunHammerThrowNadePatch
 [HarmonyPatch(typeof(ShotgunHammer), nameof(ShotgunHammer.ImpactEffects))]
 public static class ShotgunHammerImpactEffectsPatch
 {
-    public static bool Prefix(ShotgunHammer __instance)
+    public static void Prefix(ShotgunHammer __instance)
     {
         var volume = InstanceConfig.Volume;
 
-        Vector3 position = (__instance.hitPosition != Vector3.zero) ? (__instance.hitPosition - (__instance.hitPosition - MonoSingleton<CameraController>.Instance.GetDefaultPos()).normalized) : (MonoSingleton<CameraController>.Instance.GetDefaultPos() + __instance.direction * 2.5f);
-		if (__instance.primaryCharge > 0)
-		{
-			GameObject gameObject = Object.Instantiate<GameObject>((__instance.primaryCharge == 3) ? __instance.overPumpExplosion : __instance.pumpExplosion, position, Quaternion.LookRotation(__instance.direction));
-			foreach (Explosion explosion in gameObject.GetComponentsInChildren<Explosion>())
-			{
-				explosion.sourceWeapon = __instance.gameObject;
-				explosion.hitterWeapon = "hammer";
-				if (__instance.primaryCharge == 2)
-				{
-					explosion.maxSize *= 2f;
-				}
-			}
-			AudioSource audioSource;
-			if (__instance.primaryCharge == 2 && gameObject.TryGetComponent<AudioSource>(out audioSource))
-			{
-				audioSource.volume = 1f;
-				audioSource.pitch -= 0.4f;
-			}
-			__instance.primaryCharge = 0;
-		}
-		if (__instance.forceWeakHit || __instance.tier == 0)
-		{
-			__instance.anim.Play("Fire", -1, 0f);
-		}
-		else if (__instance.tier == 1)
-		{
-			__instance.anim.Play("FireStrong", -1, 0f);
-		}
-		else
-		{
-			__instance.anim.Play("FireStrongest", -1, 0f);
-		}
+        var hitsoundaud = __instance.hitImpactParticle[__instance.forceWeakHit ? 0 : __instance.tier].GetComponent<AudioSource>();
 
-		GameObject hitsound = Object.Instantiate<GameObject>(__instance.hitImpactParticle[__instance.forceWeakHit ? 0 : __instance.tier], position, MonoSingleton<CameraController>.Instance.transform.rotation);
-        AudioSource hitsoundAudioSource = hitsound.GetComponent<AudioSource>();
-        hitsoundAudioSource.Stop();
-        hitsoundAudioSource.volume = volume;
-        hitsoundAudioSource.Play();
-
-        return false;
+        if (hitsoundaud)
+        {
+            hitsoundaud.volume = volume;
+        }
     }
 }
 

@@ -1,15 +1,12 @@
-
 using UnityEngine;
 using HarmonyLib;
 
-
 namespace DisableGunSound;
 
-
-[HarmonyPatch(typeof(Turret), nameof(Turret.Shoot))]
-public static class TurretShootPatch
+[HarmonyPatch(typeof(Gutterman), nameof(Gutterman.FixedUpdate))]
+public static class GuttermanShootPatch
 {
-    public static void Prefix(Turret __instance)
+    public static void Prefix(Gutterman __instance)
     {
         var volume = InstanceConfig.Volume;
 
@@ -20,4 +17,3 @@ public static class TurretShootPatch
         }
     }
 }
-

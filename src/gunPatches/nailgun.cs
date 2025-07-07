@@ -6,57 +6,15 @@ namespace DisableGunSound;
 [HarmonyPatch(typeof(Nailgun), nameof(Nailgun.SuperSaw))]
 public static class NailgunSuperSawPatch
 {
-    public static bool Prefix(Nailgun __instance)
+    public static void Prefix(Nailgun __instance)
     {
         var volume = InstanceConfig.Volume;
 
-        __instance.fireCooldown = __instance.currentFireRate;
-        __instance.shotSuccesfully = true;
-        __instance.anim.SetLayerWeight(1, 0f);
-        __instance.anim.SetTrigger("SuperShoot");
-        MonoSingleton<RumbleManager>.Instance.SetVibration(RumbleProperties.SuperSaw);
-        __instance.barrelNum++;
-        if (__instance.barrelNum >= __instance.shootPoints.Length)
+        var aud = __instance.muzzleFlash2.GetComponent<AudioSource>();
+        if (aud != null)
         {
-            __instance.barrelNum = 0;
+            aud.volume = volume;
         }
-
-        var sawSoundObject = Object.Instantiate<GameObject>(__instance.muzzleFlash2, __instance.shootPoints[__instance.barrelNum].transform);
-        var aud = sawSoundObject.GetComponent<AudioSource>();
-        aud.Stop();
-        aud.volume = volume;
-        aud.Play();
-
-        __instance.currentSpread = 0f;
-        GameObject gameObject = Object.Instantiate<GameObject>(__instance.heatedNail, __instance.cc.transform.position + __instance.cc.transform.forward, __instance.transform.rotation);
-        gameObject.transform.forward = __instance.cc.transform.forward;
-        if (Physics.Raycast(__instance.cc.transform.position, __instance.cc.transform.forward, 1f, LayerMaskDefaults.Get(LMD.Environment)))
-        {
-            gameObject.transform.position = __instance.cc.transform.position;
-        }
-        if (__instance.targeter.CurrentTarget && __instance.targeter.IsAutoAimed)
-        {
-            gameObject.transform.position = __instance.cc.transform.position + (__instance.targeter.CurrentTarget.bounds.center - __instance.cc.transform.position).normalized;
-            gameObject.transform.LookAt(__instance.targeter.CurrentTarget.bounds.center);
-        }
-        Rigidbody rigidbody;
-        if (gameObject.TryGetComponent<Rigidbody>(out rigidbody))
-        {
-            rigidbody.velocity = gameObject.transform.forward * 200f;
-        }
-        Nail nail;
-        if (gameObject.TryGetComponent<Nail>(out nail))
-        {
-            nail.weaponType = __instance.projectileVariationTypes[__instance.variation];
-            nail.multiHitAmount = Mathf.RoundToInt(__instance.heatUp * 3f);
-            nail.ForceCheckSawbladeRicochet();
-            nail.sourceWeapon = __instance.gc.currentWeapon;
-        }
-        __instance.heatSinks -= 1f;
-        __instance.heatUp = 0f;
-        __instance.cc.CameraShake(0.5f);
-
-        return false;
     }
 }
 
@@ -66,7 +24,6 @@ public static class NailgunPatch
 {
     public static bool Prefix(Nailgun __instance)
     {
-
         var volume = InstanceConfig.Volume;
 
         __instance.UpdateAnimationWeight();

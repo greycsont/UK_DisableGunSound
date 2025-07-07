@@ -33,11 +33,11 @@ public static class RailcannonShootPatch
 				harpoon.sourceWeapon = __instance.gameObject;
 			}
 		}
-		var fireSound = Object.Instantiate<GameObject>(__instance.fireSound);
+		/*var fireSound = Object.Instantiate<GameObject>(__instance.fireSound);
         var aud = fireSound.GetComponent<AudioSource>();
         aud.Stop();
         aud.volume = volume;
-        aud.Play();
+        aud.Play();*/
 
 		__instance.anim.SetTrigger("Shoot");
 		__instance.cc.CameraShake(2f);
