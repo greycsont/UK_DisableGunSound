@@ -1,3 +1,12 @@
+/*
+ * RocketLauncher patches
+ *
+ * For rocket and cannonball, you can just access the audiosource
+ * 
+ */
+
+
+
 using UnityEngine;
 using HarmonyLib;
 

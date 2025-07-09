@@ -1,3 +1,15 @@
+/*
+ * Revolver patches
+ * 
+ * This shit is complex
+ * For default shot(just left click), you need to block and modify the orignal methods
+ * For piercer, you need to access the audiosource
+ * For sharpshooter, idk, thats the current solution
+ * 
+ */
+
+
+
 using UnityEngine;
 using HarmonyLib;
 

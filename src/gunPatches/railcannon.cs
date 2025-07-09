@@ -1,3 +1,14 @@
+/*
+ * Railcannon patches
+ * 
+ * For Electric and Screwdriver, you can just access the Gameobject's audiosource
+ * But for malicious, if have fucking 3 audiosource
+ * so you need to get all of them to make sure no any issue
+ * 
+ */
+
+
+
 using UnityEngine;
 using HarmonyLib;
 
@@ -6,7 +17,28 @@ namespace DisableGunSound;
 [HarmonyPatch(typeof(Railcannon), nameof(Railcannon.Shoot))]
 public static class RailcannonShootPatch
 {
-    public static bool Prefix(Railcannon __instance)
+    public static void Prefix(Railcannon __instance)
+    {
+        var volume = InstanceConfig.Volume;
+
+        if (__instance.variation == 2)
+        {
+            var aud = __instance.fireSound.GetComponentsInChildren<AudioSource>();
+            foreach (var audiosource in aud)
+            {
+                audiosource.volume = volume;
+            }
+        }
+        else
+        {
+            var aud = __instance.fireSound.GetComponent<AudioSource>();
+            if (aud)
+            {
+                aud.volume = volume;
+            }
+        }
+    }
+    /*public static bool Prefix(Railcannon __instance)
     {
         var volume = InstanceConfig.Volume;
 
@@ -33,16 +65,16 @@ public static class RailcannonShootPatch
 				harpoon.sourceWeapon = __instance.gameObject;
 			}
 		}
-		/*var fireSound = Object.Instantiate<GameObject>(__instance.fireSound);
+		var fireSound = Object.Instantiate<GameObject>(__instance.fireSound);
         var aud = fireSound.GetComponent<AudioSource>();
         aud.Stop();
         aud.volume = volume;
-        aud.Play();*/
+        aud.Play();
 
 		__instance.anim.SetTrigger("Shoot");
 		__instance.cc.CameraShake(2f);
 		MonoSingleton<RumbleManager>.Instance.SetVibration(RumbleProperties.GunFireStrong);
 
         return false;
-    }
+    }*/
 }

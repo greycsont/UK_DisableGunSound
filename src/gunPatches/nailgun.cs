@@ -1,7 +1,52 @@
+/*
+ * Nailgun patches
+ *
+ * For saws, you can just get and access the audiosource of muzzleFlash2
+ * For nails, you need a block and modify the original methods.
+ * (The original method will change the volume of audiosource to fixed value)
+ *
+ * For zapper and magnet, you need to access the audiosource.
+ *
+ */
+
+
+
+
 using UnityEngine;
 using HarmonyLib;
 
+
 namespace DisableGunSound;
+
+[HarmonyPatch(typeof(Nailgun), nameof(Nailgun.ShootMagnet))]
+public static class NailgunShootMagnetPatch
+{
+    public static void Prefix(Nailgun __instance)
+    {
+        var volume = InstanceConfig.Volume;
+
+        if (__instance.magnetShotSound)
+        {
+            __instance.magnetShotSound.volume = volume;
+        }
+    }
+}
+
+[HarmonyPatch(typeof(Nailgun), nameof(Nailgun.ShootZapper))]
+public static class NailgunShootZapperPatch
+{
+    public static void Prefix(Nailgun __instance)
+    {
+        var volume = InstanceConfig.Volume;
+
+        if (__instance.magnetShotSound)
+        {
+            __instance.magnetShotSound.volume = volume;
+        }
+    }
+}
+
+
 
 [HarmonyPatch(typeof(Nailgun), nameof(Nailgun.SuperSaw))]
 public static class NailgunSuperSawPatch

@@ -1,3 +1,13 @@
+/* Shotgun patches
+ * 
+ * You need to replace the audio by block and modify the original methods.
+ * 
+ */
+
+
+
+
+
 using HarmonyLib;
 using UnityEngine;
 
