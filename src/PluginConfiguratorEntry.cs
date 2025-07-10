@@ -1,4 +1,5 @@
 using PluginConfig.API;
+using PluginConfig.API.Functionals;
 
 namespace DisableGunSound;
 

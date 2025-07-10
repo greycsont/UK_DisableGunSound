@@ -12,15 +12,12 @@ using UnityEngine;
 using System;
 using System.Threading.Tasks;
 using UnityEngine.Networking;
-using System.Diagnostics;
 
 
 public static class UnitySupport
 {
     public static async Task<AudioClip> LoadWithUnityAsync(string path, AudioType audioType)
     {
-        var stopwatch = new Stopwatch();
-        stopwatch.Start();
         string url = new Uri(path).AbsoluteUri;
 
         using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(url, audioType))
@@ -39,10 +36,6 @@ public static class UnitySupport
             }
 
             var clip = DownloadHandlerAudioClip.GetContent(www);
-
-            stopwatch.Stop();
-            TimeSpan elapsedTime = stopwatch.Elapsed;
-            LogManager.LogInfo($"Time used when loading with unity : {elapsedTime}");
 
             return clip;
         }

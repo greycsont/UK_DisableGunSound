@@ -1,7 +1,11 @@
 /*
  * v2 Patches
  *
- * I feel like I need to access all IEnemyWeapon
+ * For this one.... It's quite complex
+ * First, EnemyNailgun and EnemyRevolver uses themselves
+ * The EnemyShotgun reuses the class shotgun
+ *
+ * Shit
  *
  */
 
@@ -18,10 +22,24 @@ public static class V2ShootWeaponPatch
     {
         var volume = InstanceConfig.Volume;
 
-        var aud = __instance.altFlash.GetComponent<AudioSource>();
+        Component[] components = __instance.weapons[__instance.currentWeapon].GetComponents<Component>();
+        foreach (var comp in components)
+        {
+            LogManager.LogInfo("Component: " + comp.GetType().Name);
+        }
+
+        var aud = __instance.weapons[__instance.currentWeapon].GetComponent<AudioSource>();
+        if (aud)
+        {
+            LogManager.LogInfo("Changed audiosource volume");
+            aud.volume = volume;
+        }
+
+
+        /*var aud = __instance.altFlash.GetComponent<AudioSource>();
         if (aud)
         {
             aud.volume = volume;
-        }
+        }*/
     }
 }
