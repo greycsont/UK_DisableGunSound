@@ -27,6 +27,7 @@ public class Plugin : BaseUnityPlugin
 
     private void LoadMainModule()
     {
+        AudioClipContainer.LoadAudioClips();
         pluginConfiguratorEntry.Build();
     }
     private void LoadOptionalModule()
